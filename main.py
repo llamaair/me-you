@@ -15,12 +15,11 @@ class Dropdown(discord.ui.Select):
 
         # Set the options that will be presented inside the dropdown
         options = [
-            discord.SelectOption(label='Join our clan', description='Creates a ticket if you want to join our clan', emoji='🟥'),
-            discord.SelectOption(label='Apply for Co-Leader', description='Creates a ticket if you want to apply for Co-Leader', emoji='🟩'),
-            discord.SelectOption(label='Questions and Suggestions', description='Creates a ticket if you have any suggestions or questions', emoji='🟦'),
-            discord.SelectOption(label='Merging', description='Creates a ticket if you are interested in merging with us', emoji='🟦'),
-            discord.SelectOption(label='Partner', description="Creates a ticket if you are interested in partnering with us", emoji='🟦'),
-            discord.SelectOption(label='Other', description="Creates a ticket if you would like further assistance", emoji='🟦'),
+            discord.SelectOption(label='Join our clan', description='Creates a ticket if you want to join our clan', emoji='🛡️'),
+            discord.SelectOption(label='Apply for Co-Leader', description='Creates a ticket if you want to apply for Co-Leader', emoji='👮‍♂️'),
+            discord.SelectOption(label='Questions and Suggestions', description='Creates a ticket if you have any suggestions or questions', emoji='❓'),
+            discord.SelectOption(label='Merging/Partner', description='Creates a ticket if you are interested in merging with us or Partner with us', emoji='🤝'),
+            discord.SelectOption(label='Other', description="Creates a ticket if you would like further assistance", emoji='🎯'),
         ]
 
         # The placeholder is what will be shown when no option is chosen
@@ -64,7 +63,7 @@ class Dropdown(discord.ui.Select):
           channel = await interaction.guild.create_text_channel(name = f"ticket-{interaction.user.name}", overwrites = overwrites, reason = f"Ticket for {interaction.user}")
           await channel.send(f"Welcome to your ticket {interaction.user.mention}!\n\n>>> If you have any questions for our discord or clan please mention them below. If you have any questions, our support team will assist you", view= main())
           await interaction.response.send_message(f"I've opened a ticket for you at {channel.mention}!", ephemeral = True)
-        elif self.values[0]=="Merging":
+        elif self.values[0]=="Merging/Partner":
           ticket = utils.get(interaction.guild.text_channels, name = f"ticket-{interaction.user.name}")
           overwrites = {
         interaction.guild.default_role: discord.PermissionOverwrite(view_channel = False),
@@ -72,17 +71,7 @@ class Dropdown(discord.ui.Select):
         interaction.guild.me: discord.PermissionOverwrite(view_channel = True, send_messages = True, read_message_history = True)
       }
           channel = await interaction.guild.create_text_channel(name = f"ticket-{interaction.user.name}", overwrites = overwrites, reason = f"Ticket for {interaction.user}")
-          await channel.send(f"Welcome to your ticket {interaction.user.mention}!\n\n>>> If you would like to merge with us, please mention the following;\n- Your clan tag #00000000\n- A picture of your clan\n\nFrom there, we will decide if we would merge based on your clan", view= main())
-          await interaction.response.send_message(f"I've opened a ticket for you at {channel.mention}!", ephemeral = True)
-        elif self.values[0]=="Partner":
-          ticket = utils.get(interaction.guild.text_channels, name = f"ticket-{interaction.user.name}")
-          overwrites = {
-        interaction.guild.default_role: discord.PermissionOverwrite(view_channel = False),
-        interaction.user: discord.PermissionOverwrite(view_channel = True, send_messages= True, embed_links=True),
-        interaction.guild.me: discord.PermissionOverwrite(view_channel = True, send_messages = True, read_message_history = True)
-      }
-          channel = await interaction.guild.create_text_channel(name = f"ticket-{interaction.user.name}", overwrites = overwrites, reason = f"Ticket for {interaction.user}")
-          await channel.send(f"Welcome to your ticket {interaction.user.mention}!\n\n>>> If you would like to partner with us, please mention the following;\n- Why we should partner\n- Your product\n\nFrom there, we will decide if we would partner based on your information", view= main())
+          await channel.send(f"Welcome to your ticket {interaction.user.mention}!\n\n>>> If you would like to merge with us, please mention the following;\n- Your clan tag #00000000\n- A picture of your clan\n\nFrom there, we will decide if we would merge based on your clan\n\ If you would like to partner with us, please mention the following;\n- Why we should partner\n- Your product\n\nFrom there, we will decide if we would partner based on your information", view= main())
           await interaction.response.send_message(f"I've opened a ticket for you at {channel.mention}!", ephemeral = True)
         elif self.values[0]=="Other":
           ticket = utils.get(interaction.guild.text_channels, name = f"ticket-{interaction.user.name}")
@@ -116,11 +105,19 @@ class main(discord.ui.View):
 
   @discord.ui.button(label = "Close Ticket", style = discord.ButtonStyle.red, custom_id = "close")
   async def close(self, interaction, button):
+    role = interaction.guild.get_role(1037051160172957736)
+    if role not in interaction.user.roles:
+      await interaction.send("You do not have the required role to do this!")
+      return
     embed = discord.Embed(title = "Are you sure you want to close this ticket?", color = discord.Colour.blurple())
     await interaction.response.send_message(embed = embed, view = confirm(), ephemeral = True)
 
   @discord.ui.button(label = "Transcript", style = discord.ButtonStyle.blurple, custom_id = "transcript")
   async def transcript(self, interaction, button):
+    role = interaction.guild.get_role(1037051160172957736)
+    if role not in interaction.user.roles:
+      await interaction.send("You do not have the required role to do this!")
+      return
     await interaction.response.defer()
     if os.path.exists(f"{interaction.channel.id}.md"):
       return await interaction.followup.send(f"A transcript is already being generated!", ephemeral = True)
@@ -160,11 +157,14 @@ class Bot(commands.Bot):
         print('------')
 
 
+
+
 client = Bot()
 
 
 
 @client.command()
+@commands.has_role('Support')
 async def ticketing(ctx):
     """Sends a message with our dropdown containing colours"""
 
