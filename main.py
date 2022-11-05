@@ -71,7 +71,7 @@ class Dropdown(discord.ui.Select):
         interaction.guild.me: discord.PermissionOverwrite(view_channel = True, send_messages = True, read_message_history = True)
       }
           channel = await interaction.guild.create_text_channel(name = f"ticket-{interaction.user.name}", overwrites = overwrites, reason = f"Ticket for {interaction.user}")
-          await channel.send(f"Welcome to your ticket {interaction.user.mention}!\n\n>>> If you would like to merge with us, please mention the following;\n- Your clan tag #00000000\n- A picture of your clan\n\nFrom there, we will decide if we would merge based on your clan\n\ If you would like to partner with us, please mention the following;\n- Why we should partner\n- Your product\n\nFrom there, we will decide if we would partner based on your information", view= main())
+          await channel.send(f"Welcome to your ticket {interaction.user.mention}!\n\n>>> If you would like to merge or partner with us, please mention the following;\n- Your clan tag #000000000\n- A picture of your clan\n-----\n- Why we should partner\n- Your product/service", view= main())
           await interaction.response.send_message(f"I've opened a ticket for you at {channel.mention}!", ephemeral = True)
         elif self.values[0]=="Other":
           ticket = utils.get(interaction.guild.text_channels, name = f"ticket-{interaction.user.name}")
@@ -155,6 +155,12 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
+        guild = client.get_guild(961792796161900584)
+        channel = guild.get_channel(961794817090805760)
+        await channel.purge(limit=1)
+        view = DropdownView()
+        embed=discord.Embed(title="Create a ticket")
+        await channel.send("Create a ticket", view=view)
 
 
 
@@ -175,8 +181,6 @@ async def ticketing(ctx):
     embed=discord.Embed(title="Create a ticket")
     await ctx.send("Create a ticket", view=view)
 
-
-    
 
 TOKEN = os.environ['TOKEN']
 keep_alive.keep_alive()
